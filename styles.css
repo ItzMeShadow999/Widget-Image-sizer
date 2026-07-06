@@ -384,19 +384,20 @@ button:disabled:hover {
   }
 }
 
+/* ── Gear icon in its own box ── */
 .advanced-toggle-btn {
-  width: 15px;
-  height: 15px;
+  width: 32px;
+  height: 32px;
   padding: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #52525b;
-  background: transparent;
-  border: 0;
-  border-radius: 0;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
   cursor: pointer;
-  transition: color 0.15s ease;
+  transition: all 0.15s ease;
   align-self: end;
   margin-bottom: 8px;
   margin-left: auto;
@@ -408,25 +409,32 @@ button:disabled:hover {
 
 .advanced-toggle-btn:hover {
   color: #7c3aed;
-  background: transparent;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
 }
 
+/* Box stays subtle when active */
 .advanced-toggle-btn[aria-pressed="true"] {
-  color: #7c3aed;
-  background: transparent;
+  background: rgba(88, 101, 242, 0.08);
+  border-color: rgba(88, 101, 242, 0.25);
 }
 
+/* Gear icon gets the light-blue → blurple glow */
 .advanced-toggle-btn svg {
   display: block;
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+              color 0.2s ease,
+              filter 0.2s ease;
 }
 
 .advanced-toggle-btn:hover svg {
-  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   transform: rotate(90deg);
 }
 
 .advanced-toggle-btn[aria-pressed="true"] svg {
   transform: rotate(180deg);
+  color: #a78bfa;
+  filter: drop-shadow(0 0 2px #a78bfa) drop-shadow(0 0 6px rgba(88, 101, 242, 0.5));
 }
 
 .advanced-panel {
