@@ -472,12 +472,7 @@ button:disabled:hover {
   fill: url(#gearGradient);
 }
 
-/* Spin once on hover */
-.advanced-toggle-btn:hover svg {
-  animation: spin 0.6s linear 1;
-}
-
-/* Spin once when clicked (class toggled via JS so it retriggers each click) */
+/* Spin once, triggered via JS class toggle (on hover-in and on click) */
 .advanced-toggle-btn svg.spin-once {
   animation: spin 0.6s linear 1;
 }
