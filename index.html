@@ -19,7 +19,7 @@
 
       <div class="content">
         <section id="dropZone" class="preview-wrap" aria-label="Image preview">
-          <div id="previewEmpty" class="preview-empty">Drop or select an image<br /><span class="preview-empty-sub">PNG, JPG, WEBP, or GIF</span></div>
+          <div id="previewEmpty" class="preview-empty">Drop or select an image<br /><span class="preview-empty-sub">PNG, JPG, WEBP, GIF — or drag/paste a URL</span></div>
           <div id="previewLoading" class="preview-loading" hidden>
             <div class="spinner" aria-hidden="true"></div>
             <span id="previewLoadingText">Loading preview...</span>
@@ -41,6 +41,10 @@
               <div class="row">
                 <input id="inputPath" type="text" readonly placeholder="Choose a PNG, JPG, WEBP, or GIF" />
                 <button id="browseButton" type="button">Browse</button>
+              </div>
+              <div class="row row-url">
+                <input id="urlInput" type="text" placeholder="Or paste an image/GIF URL…" />
+                <button id="urlImportButton" type="button">Import URL</button>
               </div>
             </div>
 
