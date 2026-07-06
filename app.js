@@ -1,532 +1,597 @@
-const REFERENCE_SIZE = 512;
-const AUTO_TOP_STRIP_BASE = 17;
-const AUTO_RADIUS_BASE = 36;
-const AUTO_TOP_STRIP_EXPONENT =
-  Math.log(54 / 17) / Math.log(Math.sqrt(1844 * 853) / REFERENCE_SIZE);
-const AUTO_RADIUS_EXPONENT =
-  Math.log(172 / 36) / Math.log(Math.sqrt(1844 * 853) / REFERENCE_SIZE);
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
-const titlebarStatus = document.querySelector("#titlebarStatus");
+[hidden] {
+  display: none !important;
+}
 
-const inputPath = document.querySelector("#inputPath");
-const outputName = document.querySelector("#outputName");
-const topStrip = document.querySelector("#topStrip");
-const radius = document.querySelector("#radius");
-const highQualityAnimated = document.querySelector("#highQualityAnimated");
-const browseButton = document.querySelector("#browseButton");
-const advancedToggleBtn = document.querySelector("#advancedToggleBtn");
-const advancedPanel = document.querySelector("#advancedPanel");
-const processButton = document.querySelector("#processButton");
-const downloadButton = document.querySelector("#downloadButton");
-const status = document.querySelector("#status");
-const previewEmpty = document.querySelector("#previewEmpty");
-const previewLoading = document.querySelector("#previewLoading");
-const previewLoadingText = document.querySelector("#previewLoadingText");
-const progressWrap = document.querySelector("#progressWrap");
-const progressBar = document.querySelector("#progressBar");
-const progressLabel = document.querySelector("#progressLabel");
-const previewImage = document.querySelector("#previewImage");
-const previewMeta = document.querySelector("#previewMeta");
-const localFileInput = document.querySelector("#localFileInput");
-const dropZone = document.querySelector("#dropZone");
+html, body {
+  height: 100%;
+}
 
-let lastResult = null;
-let previewBaseMeta = "";
-let selectedFile = null;
-let selectedInputUrl = "";
-let outputUrl = "";
+body {
+  height: 100vh;
+  font-family: Lexend, Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: #16171a;
+  background-image: radial-gradient(
+    110% 130% at 100% 0%,
+    rgba(45, 47, 72, 0.8) 0%,
+    rgba(30, 31, 45, 0.4) 45%,
+    rgba(22, 23, 26, 0) 100%
+  );
+  color: #dbdee1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
+}
 
-function clearObjectUrl(url) {
-  if (url) {
-    URL.revokeObjectURL(url);
+::selection {
+  background: #a78bfa33;
+  color: #fafafa;
+}
+
+input, button {
+  font: inherit;
+}
+
+/* ── Inputs (Glass) ── */
+input {
+  width: 100%;
+  background: rgba(24, 24, 27, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #fafafa;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 8px;
+  padding: 9px 12px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+}
+
+input::placeholder {
+  color: #3f3f46;
+}
+
+input:focus {
+  border-color: rgba(167, 139, 250, 0.4);
+  box-shadow: 0 0 0 2px rgba(167, 139, 250, 0.15);
+  background: rgba(24, 24, 27, 0.8);
+}
+
+input[readonly] {
+  cursor: default;
+  color: #a1a1aa;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* ── Glassmorphism Base Button ── */
+button {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  padding: 9px 16px;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(16px) saturate(140%);
+  -webkit-backdrop-filter: blur(16px) saturate(140%);
+  color: #dbdee1;
+  font-size: 13px;
+  font-weight: 500;
+  outline: none;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  flex-shrink: 0;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.06),
+    0 4px 16px rgba(0, 0, 0, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+  min-width: 108px;
+  height: 38px;
+}
+
+button:hover {
+  background: rgba(255, 255, 255, 0.10);
+  border-color: rgba(255, 255, 255, 0.18);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.08),
+    0 6px 20px rgba(0, 0, 0, 0.30),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+button:focus-visible {
+  box-shadow: 0 0 0 2px rgba(88, 101, 242, 0.4);
+}
+
+/* ── Primary Button (Glass Blurple) ── */
+button.primary {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(88, 101, 242, 0.35);
+  background: linear-gradient(
+    180deg,
+    rgba(88, 101, 242, 0.25) 0%,
+    rgba(71, 82, 196, 0.35) 100%
+  );
+  backdrop-filter: blur(20px) saturate(160%);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  color: #ffffff;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.12),
+    0 4px 20px rgba(88, 101, 242, 0.25),
+    0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+button.primary:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(103, 115, 244, 0.32) 0%,
+    rgba(83, 95, 205, 0.42) 100%
+  );
+  border-color: rgba(103, 115, 244, 0.45);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.14),
+    0 6px 24px rgba(88, 101, 242, 0.35),
+    0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* The Dash Animation */
+button.primary::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transform: skewX(-25deg);
+  transition: 0.6s;
+  pointer-events: none;
+}
+
+button.primary:hover::after {
+  left: 150%;
+}
+
+button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+button:disabled:hover {
+  background: rgba(255, 255, 255, 0.03);
+  color: #a1a1aa;
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+.titlebar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 4px 0;
+  height: 40px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.titlebar-brand {
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  color: #fafafa;
+}
+
+.titlebar-status {
+  font-size: 11px;
+  color: #71717a;
+  margin-left: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px 4px 32px;
+  gap: 16px;
+  min-height: 0;
+}
+
+.preview-wrap {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 320px;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border-radius: 12px;
+  background: rgba(12, 12, 15, 0.6);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  overflow: hidden;
+  position: relative;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.preview-wrap.drag-over {
+  border-color: #7c3aed;
+  background: rgba(18, 12, 31, 0.6);
+}
+
+.preview-empty {
+  color: #3f3f46;
+  font-size: 13px;
+  user-select: none;
+  text-align: center;
+  padding: 20px;
+}
+
+.preview-empty-sub {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #27272a;
+  letter-spacing: 0.04em;
+}
+
+.preview-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(12, 12, 15, 0.82);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #d4d4d8;
+  font-size: 13px;
+  z-index: 2;
+}
+
+.spinner {
+  width: 28px;
+  height: 28px;
+  border: 2px solid #27272a;
+  border-top-color: #8b5cf6;
+  border-radius: 999px;
+  animation: spin 0.8s linear infinite;
+}
+
+.progress-wrap {
+  width: min(260px, 70%);
+  display: grid;
+  gap: 8px;
+}
+
+.progress-track {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: #27272a;
+  overflow: hidden;
+}
+
+.progress-bar {
+  width: 0%;
+  height: 100%;
+  border-radius: inherit;
+  background: #8b5cf6;
+  transition: width 0.18s ease;
+}
+
+.progress-label {
+  text-align: center;
+  font-size: 12px;
+  color: #e4e4e7;
+}
+
+.preview-image {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center;
+  background:
+    linear-gradient(45deg, #141417 25%, transparent 25%),
+    linear-gradient(-45deg, #141417 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #141417 75%),
+    linear-gradient(-45deg, transparent 75%, #141417 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+
+.preview-meta {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 8px 14px;
+  font-size: 12px;
+  color: #a1a1aa;
+  background: linear-gradient(transparent, rgba(9, 9, 11, 0.87));
+  pointer-events: none;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.controls {
+  display: grid;
+  gap: 6px;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.toolbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr) 120px 120px auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.toolbar-item {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+  min-width: 0;
+}
+
+.toolbar-item label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #a1a1aa;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  padding-left: 2px;
+}
+
+.toolbar-item input {
+  min-width: 0;
+}
+
+.toolbar-item-image .row {
+  display: flex;
+  gap: 6px;
+  min-width: 0;
+}
+
+.toolbar-item-image input {
+  flex: 1;
+  min-width: 0;
+}
+
+.toolbar-item-number {
+  width: 100%;
+}
+
+@media (max-width: 720px) {
+  .toolbar {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .toolbar-item-image {
+    grid-column: 1 / -1;
+  }
+
+  .control-actions {
+    grid-column: 1 / -1;
+    justify-self: stretch;
   }
 }
 
-function updateTitlebarStatus() {
-  if (status.textContent.trim()) {
-    titlebarStatus.textContent = status.textContent.trim();
-    return;
-  }
-
-  if (inputPath.value.trim()) {
-    titlebarStatus.textContent = outputName.value.trim()
-      ? `Loaded ${outputName.value.trim()}`
-      : "Image selected.";
-    return;
-  }
-
-  titlebarStatus.textContent = "Waiting for an image.";
+/* ── Gear Icon Box (Glass) ── */
+.advanced-toggle-btn {
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #52525b;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  align-self: end;
+  margin-bottom: 0;
+  margin-left: 4px;
+  flex: 0 0 auto;
+  min-width: 0;
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.06),
+    0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
-function setStatus(message, tone = "neutral") {
-  status.textContent = message;
-  status.dataset.tone = tone;
-  updateTitlebarStatus();
+.advanced-toggle-btn:hover {
+  color: #71717a;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.18);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.08),
+    0 6px 16px rgba(0, 0, 0, 0.25);
 }
 
-function setTitlebarMessage(message) {
-  status.textContent = "";
-  status.dataset.tone = "neutral";
-  titlebarStatus.textContent = message;
+/* Box keeps subtle blurple tint when active; gear stays neutral */
+.advanced-toggle-btn[aria-pressed="true"] {
+  background: rgba(88, 101, 242, 0.08);
+  border-color: rgba(88, 101, 242, 0.30);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.06),
+    0 4px 16px rgba(88, 101, 242, 0.15);
 }
 
-function setPreviewLoading(loading, message = "Loading preview...") {
-  previewLoading.hidden = !loading;
-  previewLoadingText.textContent = loading ? message : "";
+/* ── Gear icon: NO colour, NO glow ── */
+.advanced-toggle-btn svg {
+  display: block;
+  width: 16px;
+  height: 16px;
 }
 
-function setProgressState(visible, percent = 0, label = "") {
-  const clampedPercent = Math.max(0, Math.min(100, percent));
-  progressWrap.hidden = !visible;
-  progressBar.style.width = `${clampedPercent}%`;
-  progressLabel.textContent = label || `${clampedPercent}%`;
+.advanced-toggle-btn svg path {
+  fill: currentColor;
+  transition: transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-function setPreviewMeta(message = "") {
-  previewMeta.textContent = message;
+.advanced-toggle-btn:hover svg {
+  transform: rotate(90deg);
 }
 
-function clearPreview() {
-  previewImage.removeAttribute("src");
-  previewImage.hidden = true;
-  previewEmpty.hidden = false;
-  previewBaseMeta = "";
-  setPreviewMeta("");
-  setPreviewLoading(false);
-  setProgressState(false, 0, "");
-  updateTitlebarStatus();
+.advanced-toggle-btn[aria-pressed="true"] svg {
+  transform: rotate(180deg);
 }
 
-function updatePreviewMetaWithDimensions() {
-  if (previewImage.hidden || !previewImage.naturalWidth || !previewImage.naturalHeight) {
-    setPreviewMeta(previewBaseMeta);
-    return;
-  }
-
-  const dimensions = `${previewImage.naturalWidth}x${previewImage.naturalHeight}`;
-  setPreviewMeta(previewBaseMeta ? `${previewBaseMeta} ${dimensions}.` : dimensions);
+.advanced-panel {
+  max-height: 0;
+  opacity: 0;
+  transition: max-height 0.25s ease, opacity 0.18s ease;
+  overflow: hidden;
 }
 
-function getSuggestedOutputName(fileName) {
-  const cleanName = fileName.split(/[/\\]/).pop() ?? "image";
-  const extensionMatch = cleanName.match(/\.[^.]+$/);
-  const extension = extensionMatch?.[0]?.toLowerCase() ?? ".png";
-  const stem = cleanName.replace(/\.[^.]+$/, "");
-  return `${stem}-resized${extension}`;
+.advanced-panel--open {
+  max-height: 48px;
+  opacity: 1;
 }
 
-function isGifInput(fileName) {
-  return /\.gif$/i.test(fileName);
+.advanced-panel-inner {
+  min-height: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 0 0 2px 2px;
 }
 
-function isWebpInput(fileName) {
-  return /\.webp$/i.test(fileName);
+.advanced-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  padding: 4px 0;
 }
 
-function getAutoValue(baseValue, exponent, width, height) {
-  const sizeFactor = Math.sqrt(width * height) / REFERENCE_SIZE;
-  return Math.max(0, Math.round(baseValue * Math.pow(sizeFactor, exponent)));
+.advanced-label {
+  font-size: 12px;
+  color: #a1a1aa;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
-function parseOptionalNumber(value, label) {
-  if (value == null || value === "") {
-    return null;
-  }
-
-  const parsed = Number.parseInt(value, 10);
-  if (Number.isNaN(parsed) || parsed < 0) {
-    throw new Error(`${label} must be a non-negative number.`);
-  }
-
-  return parsed;
+.toggle-switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex-shrink: 0;
+  cursor: pointer;
 }
 
-function clampRadius(value, width, height, strip) {
-  const imageHeight = Math.max(height - strip, 0);
-  return Math.min(value, width, imageHeight);
+.toggle-switch input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
-// Reserves the top strip and cuts a rounded corner out of the top-right,
-// matching the desktop app's widget-framing effect. Shared by the still-image
-// and per-GIF-frame pipelines so both stay pixel-identical.
-function applyWidgetEffect(context, width, height, finalTopStrip, finalRadius, source) {
-  context.clearRect(0, 0, width, height);
-  context.drawImage(source, 0, finalTopStrip, width, height - finalTopStrip);
-
-  if (finalRadius > 0) {
-    context.save();
-    context.globalCompositeOperation = "destination-out";
-    context.beginPath();
-    context.moveTo(width - finalRadius, finalTopStrip);
-    context.lineTo(width, finalTopStrip);
-    context.lineTo(width, finalTopStrip + finalRadius);
-    context.arc(width - finalRadius, finalTopStrip + finalRadius, finalRadius, 0, -Math.PI / 2, true);
-    context.closePath();
-    context.fill();
-    context.restore();
-  }
+.toggle-slider {
+  position: absolute;
+  inset: 0;
+  background: #18181b;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.5), 0 1px 1px rgba(255, 255, 255, 0.05);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.4);
 }
 
-async function loadImageElement(src) {
-  return new Promise((resolve, reject) => {
-    const image = new Image();
-    image.onload = () => resolve(image);
-    image.onerror = () => reject(new Error("Could not decode image."));
-    image.src = src;
-  });
+.toggle-slider::before {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  left: 3px;
+  top: 2px;
+  background: #a1a1aa;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3), inset 0 -1px 1px rgba(0,0,0,0.2);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.4);
 }
 
-function setPreview(src, label) {
-  previewImage.src = src;
-  previewImage.alt = label;
-  previewImage.hidden = false;
-  previewEmpty.hidden = true;
+.toggle-switch input:checked + .toggle-slider {
+  background: #22c55e;
+  border-color: rgba(255, 255, 255, 0.15);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2), 0 0 8px rgba(34, 197, 94, 0.3);
 }
 
-function openFileDialog() {
-  return new Promise((resolve) => {
-    localFileInput.value = "";
-    localFileInput.onchange = () => resolve(localFileInput.files?.[0] ?? null);
-    localFileInput.click();
-  });
+.toggle-switch input:checked + .toggle-slider::before {
+  transform: translateX(20px);
+  background: #ffffff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
-function setSelectedFile(file) {
-  selectedFile = file;
-  clearObjectUrl(selectedInputUrl);
-  selectedInputUrl = file ? URL.createObjectURL(file) : "";
+.toggle-switch:active .toggle-slider {
+  transform: scale(0.92);
 }
 
-function computeDimensions(width, height) {
-  const manualTopStrip = parseOptionalNumber(topStrip.value, "top strip");
-  const manualRadius = parseOptionalNumber(radius.value, "radius");
-  const finalTopStrip =
-    manualTopStrip ?? getAutoValue(AUTO_TOP_STRIP_BASE, AUTO_TOP_STRIP_EXPONENT, width, height);
-  const autoRadius =
-    manualRadius ?? getAutoValue(AUTO_RADIUS_BASE, AUTO_RADIUS_EXPONENT, width, height);
-  const finalRadius = clampRadius(autoRadius, width, height, finalTopStrip);
-  return { finalTopStrip, finalRadius, autoCalculated: manualTopStrip == null && manualRadius == null };
+.control-actions {
+  display: flex;
+  gap: 6px;
+  align-items: stretch;
+  justify-self: end;
+  align-self: end;
+  padding-top: 16px;
 }
 
-function sizeWarning(width, height) {
-  return width !== REFERENCE_SIZE || height !== REFERENCE_SIZE
-    ? `Widget may look odd if the original image size is not ${REFERENCE_SIZE}x${REFERENCE_SIZE}. Detected ${width}x${height}.`
-    : null;
+.control-actions button {
+  min-width: 108px;
 }
 
-async function processStillImage(file) {
-  const sourceUrl = URL.createObjectURL(file);
-
-  try {
-    const image = await loadImageElement(sourceUrl);
-    const width = image.naturalWidth;
-    const height = image.naturalHeight;
-    const { finalTopStrip, finalRadius, autoCalculated } = computeDimensions(width, height);
-
-    setProgressState(true, 30, "Preparing image (30%)");
-    const canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    const context = canvas.getContext("2d");
-
-    if (!context) {
-      throw new Error("Canvas is not available in this browser.");
-    }
-
-    applyWidgetEffect(context, width, height, finalTopStrip, finalRadius, image);
-
-    setProgressState(true, 80, "Encoding image (80%)");
-
-    const desiredName = outputName.value.trim() || getSuggestedOutputName(file.name);
-    const extension = (desiredName.match(/\.[^.]+$/)?.[0] ?? ".png").toLowerCase();
-    const mimeType =
-      extension === ".jpg" || extension === ".jpeg"
-        ? "image/jpeg"
-        : extension === ".webp"
-          ? "image/webp"
-          : "image/png";
-
-    const blob = await new Promise((resolve, reject) => {
-      canvas.toBlob((result) => {
-        if (result) {
-          resolve(result);
-        } else {
-          reject(new Error("Could not encode the generated image."));
-        }
-      }, mimeType, mimeType === "image/jpeg" ? 0.92 : undefined);
-    });
-
-    clearObjectUrl(outputUrl);
-    outputUrl = URL.createObjectURL(blob);
-    setProgressState(true, 100, "Done (100%)");
-
-    return {
-      outputName: desiredName,
-      previewUrl: outputUrl,
-      width,
-      height,
-      topStrip: finalTopStrip,
-      radius: finalRadius,
-      autoCalculated,
-      frameCount: 1,
-      animated: false,
-      warning: [
-        sizeWarning(width, height),
-        isWebpInput(file.name) ? "Exported as a single still WEBP frame." : null
-      ].filter(Boolean).join(" ") || null
-    };
-  } finally {
-    clearObjectUrl(sourceUrl);
-  }
+.status {
+  flex-shrink: 0;
+  padding: 0;
+  font-size: 12px;
+  color: #a1a1aa;
+  line-height: 1.5;
+  min-height: 0;
+  transition: color 0.2s ease;
 }
 
-// modern-gif ships in a few different module shapes depending on version, and
-// plain <script src> tags are unreliable across CDNs when a package's "bare
-// URL" resolves to an ESM build (the export statement just fails silently in
-// a classic script). Importing it as a real ES module side-steps that, with a
-// second CDN as a fallback in case the first is unreachable.
-let modernGifPromise = null;
-
-async function loadModernGif() {
-  if (modernGifPromise) {
-    return modernGifPromise;
-  }
-
-  modernGifPromise = (async () => {
-    const sources = [
-      "https://esm.sh/modern-gif@2",
-      "https://cdn.jsdelivr.net/npm/modern-gif@2/+esm"
-    ];
-
-    let lastError = null;
-    for (const source of sources) {
-      try {
-        const module = await import(/* @vite-ignore */ source);
-        if (module?.decode && module?.decodeFrames && module?.encode) {
-          return module;
-        }
-        lastError = new Error(`Loaded ${source} but it did not expose the expected GIF API.`);
-      } catch (error) {
-        lastError = error;
-      }
-    }
-
-    throw lastError ?? new Error("Could not load the GIF engine from any source.");
-  })();
-
-  try {
-    return await modernGifPromise;
-  } catch (error) {
-    modernGifPromise = null;
-    throw error;
-  }
+.status[data-tone="success"] {
+  color: #6ee7b7;
 }
 
-async function processGif(file) {
-  let modernGif;
-  try {
-    modernGif = await loadModernGif();
-  } catch (error) {
-    throw new Error(
-      `GIF engine failed to load (${error?.message ?? error}). Check your connection and reload the page.`
-    );
-  }
-
-  setProgressState(true, 5, "Reading GIF (5%)");
-  const buffer = await file.arrayBuffer();
-  const gifInfo = modernGif.decode(buffer);
-  const width = gifInfo.width;
-  const height = gifInfo.height;
-  const { finalTopStrip, finalRadius, autoCalculated } = computeDimensions(width, height);
-
-  setProgressState(true, 15, "Decoding frames (15%)");
-  const decodedFrames = await modernGif.decodeFrames(buffer);
-  const totalFrames = decodedFrames.length || 1;
-
-  const outputFrames = decodedFrames.map((frame, index) => {
-    const frameCanvas = document.createElement("canvas");
-    frameCanvas.width = frame.width;
-    frameCanvas.height = frame.height;
-    frameCanvas
-      .getContext("2d")
-      .putImageData(new ImageData(new Uint8ClampedArray(frame.data), frame.width, frame.height), 0, 0);
-
-    const outputCanvas = document.createElement("canvas");
-    outputCanvas.width = width;
-    outputCanvas.height = height;
-    applyWidgetEffect(outputCanvas.getContext("2d"), width, height, finalTopStrip, finalRadius, frameCanvas);
-
-    const percent = 15 + Math.round(((index + 1) / totalFrames) * 65);
-    setProgressState(true, percent, `Preparing frames ${index + 1}/${totalFrames} (${percent}%)`);
-
-    return { data: outputCanvas, delay: frame.delay ?? 100 };
-  });
-
-  setProgressState(true, 85, "Encoding GIF (85%)");
-  const output = await modernGif.encode({
-    width,
-    height,
-    frames: outputFrames,
-    maxColors: highQualityAnimated.checked ? 255 : 128,
-    loop: 0
-  });
-
-  clearObjectUrl(outputUrl);
-  const blob = new Blob([output], { type: "image/gif" });
-  outputUrl = URL.createObjectURL(blob);
-  setProgressState(true, 100, `Encoding frames ${totalFrames}/${totalFrames} (100%)`);
-
-  const desiredName = outputName.value.trim() || getSuggestedOutputName(file.name);
-
-  return {
-    outputName: desiredName,
-    previewUrl: outputUrl,
-    width,
-    height,
-    topStrip: finalTopStrip,
-    radius: finalRadius,
-    autoCalculated,
-    frameCount: totalFrames,
-    animated: true,
-    warning: sizeWarning(width, height)
-  };
+.status[data-tone="error"] {
+  color: #fca5a5;
 }
-
-function resetResultState() {
-  lastResult = null;
-  downloadButton.disabled = true;
-}
-
-previewImage.addEventListener("load", () => {
-  setPreviewLoading(false);
-  updatePreviewMetaWithDimensions();
-});
-
-previewImage.addEventListener("error", () => {
-  setPreviewLoading(false);
-  setPreviewMeta(previewBaseMeta || "Preview unavailable.");
-});
-
-outputName.addEventListener("input", () => {
-  updateTitlebarStatus();
-});
-
-async function handleSelectedFile(file) {
-  if (!file) {
-    return;
-  }
-
-  setSelectedFile(file);
-  inputPath.value = file.name;
-  outputName.value = getSuggestedOutputName(file.name);
-  resetResultState();
-
-  previewBaseMeta = isWebpInput(file.name)
-    ? "Previewing selected image. WEBP exports as a still frame."
-    : "Previewing selected image.";
-
-  updateTitlebarStatus();
-  setPreviewLoading(true, "");
-
-  try {
-    setPreview(selectedInputUrl, "Selected input image");
-    setPreviewMeta(previewBaseMeta);
-    setStatus("", "neutral");
-  } catch (error) {
-    setPreviewLoading(false);
-    setStatus(`Could not preview image: ${String(error)}`, "error");
-  }
-}
-
-browseButton.addEventListener("click", async () => {
-  const selected = await openFileDialog();
-  await handleSelectedFile(selected);
-});
-
-["dragenter", "dragover"].forEach((eventName) => {
-  dropZone.addEventListener(eventName, (event) => {
-    event.preventDefault();
-    dropZone.classList.add("drag-over");
-  });
-});
-
-["dragleave", "drop"].forEach((eventName) => {
-  dropZone.addEventListener(eventName, (event) => {
-    event.preventDefault();
-    dropZone.classList.remove("drag-over");
-  });
-});
-
-dropZone.addEventListener("drop", async (event) => {
-  const file = event.dataTransfer?.files?.[0];
-  if (file) {
-    await handleSelectedFile(file);
-  }
-});
-
-advancedToggleBtn.addEventListener("click", () => {
-  const isOpen = advancedPanel.classList.toggle("advanced-panel--open");
-  advancedToggleBtn.setAttribute("aria-pressed", String(isOpen));
-});
-
-processButton.addEventListener("click", async () => {
-  if (!selectedFile) {
-    setStatus("Choose an input image first.", "error");
-    return;
-  }
-
-  processButton.disabled = true;
-  downloadButton.disabled = true;
-  setProgressState(false, 0, "");
-  setStatus("", "neutral");
-  setPreviewLoading(true, "");
-
-  try {
-    const result = isGifInput(selectedFile.name)
-      ? await processGif(selectedFile)
-      : await processStillImage(selectedFile);
-
-    lastResult = result;
-    downloadButton.disabled = false;
-
-    previewBaseMeta = result.animated
-      ? `Previewing output, ${result.frameCount} frames.`
-      : "Previewing generated output.";
-    setPreview(result.previewUrl, "Processed output image");
-    setPreviewMeta(previewBaseMeta);
-
-    if (result.warning) {
-      setTitlebarMessage(result.warning);
-    } else {
-      setStatus("", "success");
-    }
-  } catch (error) {
-    setPreviewLoading(false);
-    setProgressState(false, 0, "");
-    setStatus(String(error?.message ?? error), "error");
-  } finally {
-    processButton.disabled = false;
-  }
-});
-
-downloadButton.addEventListener("click", () => {
-  if (!lastResult) {
-    setStatus("Generate an image before downloading it.", "error");
-    return;
-  }
-
-  const defaultName = outputName.value.trim() || lastResult.outputName;
-  const link = document.createElement("a");
-  link.href = lastResult.previewUrl;
-  link.download = defaultName;
-  link.click();
-  setTitlebarMessage(`Downloaded ${defaultName}.`);
-});
-
-window.addEventListener("beforeunload", () => {
-  clearObjectUrl(selectedInputUrl);
-  clearObjectUrl(outputUrl);
-});
-
-clearPreview();
-setStatus("", "neutral");
