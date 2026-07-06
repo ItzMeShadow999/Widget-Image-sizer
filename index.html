@@ -95,5 +95,21 @@
 
     <input id="localFileInput" type="file" accept=".png,.jpg,.jpeg,.webp,.gif" hidden />
     <script type="module" src="./app.js"></script>
+    <script>
+      (function () {
+        var gearBtn = document.getElementById('advancedToggleBtn');
+        if (!gearBtn) return;
+        var gearSvg = gearBtn.querySelector('svg');
+        gearBtn.addEventListener('click', function () {
+          gearSvg.classList.remove('spin-once');
+          // force reflow so the animation can restart even on rapid re-clicks
+          void gearSvg.offsetWidth;
+          gearSvg.classList.add('spin-once');
+        });
+        gearSvg.addEventListener('animationend', function () {
+          gearSvg.classList.remove('spin-once');
+        });
+      })();
+    </script>
   </body>
 </html>
