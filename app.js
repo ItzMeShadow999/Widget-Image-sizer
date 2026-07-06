@@ -148,9 +148,7 @@ function clampRadius(value, width, height, strip) {
   return Math.min(value, width, imageHeight);
 }
 
-// Reserves the top strip and cuts a rounded corner out of the top-right,
-// matching the desktop app's widget-framing effect. Shared by the still-image
-// and per-GIF-frame pipelines so both stay pixel-identical.
+
 function applyWidgetEffect(context, width, height, finalTopStrip, finalRadius, source) {
   context.clearRect(0, 0, width, height);
   context.drawImage(source, 0, finalTopStrip, width, height - finalTopStrip);
@@ -206,7 +204,7 @@ function fileNameFromUrl(url, contentType) {
   try {
     pathname = new URL(url).pathname.split("/").pop() || "image";
   } catch {
-    // fall back to the default name below
+
   }
   pathname = decodeURIComponent(pathname).split(/[?#]/)[0] || "image";
 
@@ -365,11 +363,7 @@ async function processStillImage(file) {
   }
 }
 
-// modern-gif ships in a few different module shapes depending on version, and
-// plain <script src> tags are unreliable across CDNs when a package's "bare
-// URL" resolves to an ESM build (the export statement just fails silently in
-// a classic script). Importing it as a real ES module side-steps that, with a
-// second CDN as a fallback in case the first is unreachable.
+
 let modernGifPromise = null;
 
 async function loadModernGif() {
