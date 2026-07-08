@@ -19,7 +19,7 @@ A lightweight, blazing-fast browser utility designed to format, convert, and opt
 
 This utility is engineered completely in vanilla ECMAScript modules with zero third-party framework dependencies, running entirely client-side for immediate execution loops. 
 
-Because it implements universal web standards and low-level canvas stream rendering, it can input absolutely **ANYTHING** you throw at it—handling web standards, legacy image data structures, and rare asset formats interchangeably without requiring external backend processing.
+Because it implements universal web standards and low-level canvas stream rendering, it can input absolutely **ANYTHING** you throw at it handling web standards, legacy image data structures, and rare asset formats interchangeably without requiring external backend processing.
 
  **Need Help?** If you run into any setup failures or technical processing bugs, feel free to DM **[Shadow](https://discord.com/users/1065604516399026176)** directly on Discord.
 
