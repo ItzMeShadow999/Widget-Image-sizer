@@ -1,4 +1,4 @@
-# PATCH NOTES // UPDATE
+# PATCH NOTES // 2.6
 
 ## [FIXED]
 * **UI & Rotation Wheel:** Restricted the rotation mechanics strictly to 360° to prevent the wheel component from breaking[cite: 1].
