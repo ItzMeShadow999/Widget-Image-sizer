@@ -157,9 +157,10 @@
       <section id="converterPanel" role="tabpanel" aria-label="File Converter" hidden>
 
         
-        <div class="warn-callout" role="note">
+        <div class="warn-callout" id="warnCalloutConverter" role="note">
           <em class="warn-callout-icon">⚠</em>
           <span>The File Converter works on <strong>static images only</strong> — it does not process animated GIFs frame-by-frame. For animated GIF output, use the <strong>Widget Framer</strong> tab.</span>
+          <button class="warn-callout-close" aria-label="Dismiss notice" onclick="dismissWarnCallout('warnCalloutConverter')">−</button>
         </div>
 
         
@@ -268,9 +269,10 @@
       </div>
 
       
-      <div class="warn-callout" role="note">
+      <div class="warn-callout" id="warnCalloutAdvanced" role="note">
         <em class="warn-callout-icon">⚠</em>
         <span>The Advanced Editor works on <strong>static images only</strong> — it does not process animated GIFs frame-by-frame. For animated GIF output, use the <strong>Widget Framer</strong> tab.</span>
+        <button class="warn-callout-close" aria-label="Dismiss notice" onclick="dismissWarnCallout('warnCalloutAdvanced')">−</button>
       </div>
 
       
@@ -775,5 +777,28 @@
     </script>
 
     <script type="module" src="./app.js"></script>
+
+    <script>
+      function dismissWarnCallout(id) {
+        var el = document.getElementById(id);
+        if (!el || el.classList.contains('warn-callout--dismissing')) return;
+        el.classList.add('warn-callout--dismissing');
+
+        el.addEventListener('animationend', function onEnd(e) {
+          if (e.animationName !== 'warnDisintegrate') return;
+          el.removeEventListener('animationend', onEnd);
+
+          el.style.height = el.offsetHeight + 'px';
+          el.style.marginBottom = getComputedStyle(el).marginBottom;
+
+          void el.offsetHeight;
+          el.classList.add('warn-callout--collapsing');
+          el.addEventListener('transitionend', function onCollapse() {
+            el.removeEventListener('transitionend', onCollapse);
+            el.remove();
+          });
+        });
+      }
+    </script>
   </body>
 </html>
