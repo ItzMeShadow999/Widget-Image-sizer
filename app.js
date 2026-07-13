@@ -601,21 +601,34 @@ async function loadModernGif() {
 
 let webpEncoderPromise = null;
 
+function _probeEncodeAnimation(module) {
+  // Probe all known export shapes across webp-wasm versions
+  const candidates = [
+    module?.encodeAnimation,
+    module?.default?.encodeAnimation,
+    module?.WebP?.encodeAnimation,
+    module?.default?.WebP?.encodeAnimation,
+  ];
+  return candidates.find((fn) => typeof fn === "function") ?? null;
+}
+
 async function loadWebpEncoder() {
   if (webpEncoderPromise) return webpEncoderPromise;
 
   webpEncoderPromise = (async () => {
     const sources = [
       "https://esm.sh/webp-wasm@1.0.6",
-      "https://cdn.jsdelivr.net/npm/webp-wasm@1.0.6/+esm"
+      "https://cdn.jsdelivr.net/npm/webp-wasm@1.0.6/+esm",
+      "https://esm.sh/webp-wasm",          // latest, no pinned version
+      "https://cdn.jsdelivr.net/npm/webp-wasm/+esm",
     ];
 
     let lastError = null;
     for (const source of sources) {
       try {
-        const module = await import( source);
-        const encodeAnimation = module?.encodeAnimation ?? module?.default?.encodeAnimation;
-        if (typeof encodeAnimation === "function") {
+        const module = await import(source);
+        const encodeAnimation = _probeEncodeAnimation(module);
+        if (encodeAnimation) {
           return { encodeAnimation };
         }
         lastError = new Error(`Loaded ${source} but it did not expose an encodeAnimation() API.`);
@@ -1237,7 +1250,11 @@ document.querySelectorAll(".warn-callout-close").forEach((btn) => {
     try {
       webpEncoder = await loadWebpEncoder();
     } catch (error) {
-      throw new Error(`Animated WEBP engine failed to load (${error?.message ?? error}). Check your connection and reload the page.`);
+      throw new Error(
+        `Animated WEBP engine failed to load (${error?.message ?? error}). ` +
+        `This is usually caused by a CDN outage or a content-security-policy blocking dynamic imports. ` +
+        `Try reloading the page, or disable any ad-blocker / CSP extension for this site.`
+      );
     }
 
     ui.setProgressState(true, 15, "Preparing frames (15%)");
